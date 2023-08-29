@@ -8,7 +8,7 @@ from pep_parse.items import PepParseItem
 class PepSpider(scrapy.Spider):
     name = 'pep'
     allowed_domains = ['peps.python.org']
-    start_urls = ['https://peps.python.org/']
+    start_urls = [f'https://{domain}/' for domain in allowed_domains]
 
     def parse(self, response):
         all_peps = response.css(
@@ -23,11 +23,9 @@ class PepSpider(scrapy.Spider):
         pep_title = response.css('h1.page-title::text').get()
         number, name = re.search(pattern, pep_title).groups()
 
-        data = {
-            'number': number,
-            'name': name,
-            'status': (response.css('dt:contains("Status") + dd abbr::text')
-                       .get())
-        }
-
-        yield PepParseItem(data)
+        yield PepParseItem(
+            {'number': number,
+             'name': name,
+             'status': (response.css('dt:contains("Status") + dd abbr::text')
+                        .get())}
+        )
